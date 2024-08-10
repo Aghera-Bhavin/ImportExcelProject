@@ -1,0 +1,159 @@
+﻿@model ExcelFileModel
+
+@{
+    ViewData["Title"] = "Upload Excel File";
+}
+
+<h2>Upload Excel File</h2>
+<form id="uploadForm" method="post" enctype="multipart/form-data">
+    <div id="error" class="border border-rounded w-25 d-none">
+    </div>
+    <div class="row">
+        <div class="col-4">
+            <input class="form-control" accept="xlsx, xls" type="file" asp-for="File" id="File" />
+        </div>
+        <div class="col-4">
+            <select class="form-select form-control" id="SelectedSheet" name="SelectedSheet">
+                <option value="">Select a sheet</option>
+                @if (Model.SheetNames != null)
+                {
+                    foreach (var sheet in Model.SheetNames)
+                    {
+                        <option value="@sheet">@sheet</option>
+                    }
+                }
+            </select>
+            <input type="hidden" asp-for="SelectedSheetName" id="hiddenSelectedSheetName" />
+        </div>
+        <div class="col-4">
+            <input class="form-control" type="text" asp-for="TableName" id="TableName" placeholder="Enter Table Name" />
+        </div>
+        <div class="col-4 pt-2">
+            <button class="btn btn-success" id="ImportExcel" type="button">Import</button>
+            <button class="btn btn-secondary" type="button" id="displayData">Display Data</button>
+            <button class="btn btn-secondary" asp-controller="UploadExcel" asp-action="ViewExcelData" type="submit">View Excel Data</button>
+        </div>
+    </div>
+</form>
+
+@* <div class="container overflow-scroll" style="height: 500px;" id="tableContainer">
+    <table class="table table-bordered" id="table">
+        <thead id="thead"></thead>
+        <tbody id="tbody"></tbody>
+    </table>
+    <!-- Table data will be injected here -->
+</div> *@
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $('#File').on('change', function () {
+                var formData = new FormData();
+                formData.append('file', this.files[0]);
+
+                $.ajax({
+                    url: '/UploadExcel/GetSheetNames',
+                    type: 'POST',
+                    data: formData,
+                    contentType: false,
+                    processData: false,
+                    success: function (data) {
+                        var sheetSelect = $('#SelectedSheet');
+                        sheetSelect.empty();
+                        sheetSelect.append('<option value="">Select a sheet</option>');
+                        $.each(data, function (index, sheet) {
+                            sheetSelect.append('<option value="' + sheet + '">' + sheet + '</option>');
+                        });
+                    }
+                });
+            });
+
+            $('#SelectedSheet').on('change', function () {
+                $('#hiddenSelectedSheetName').val($(this).val());
+            });
+
+            // $('#displayData').on('click', function () {
+            //     var fileInput = $('#File')[0].files[0];
+            //     var selectedSheet = $('#SelectedSheet').val();
+
+            //     var formData = new FormData();
+            //     formData.append('file', fileInput);
+            //     formData.append('selectedSheet', selectedSheet);
+
+            //     $.ajax({
+            //         url: '/UploadExcel/GetTableData',
+            //         type: 'POST',
+            //         data: formData,
+            //         dataType: "JSON",
+            //         contentType: false,
+            //         processData: false,
+            //         success: function (response) {
+            //             $('#error').addClass("alert alert-danger alert alert-success d-none");
+            //             if (response.success) {
+            //                 var table = $('#table');
+
+            //                 if (response.data.length > 0) {
+            //                     var thead = $('#thead');
+            //                     var tbody = $('#tbody');
+
+            //                     // Create table headers
+            //                     var headers = Object.keys(response.data[0]);
+            //                     var headerRow = $('<tr></tr>');
+            //                     $.each(headers, function (index, header) {
+            //                         headerRow.append('<th>' + header + '</th>');
+            //                     });
+            //                     thead.append(headerRow);
+
+            //                     // Create table rows
+            //                     $.each(response.data, function (index, row) {
+            //                         var rowElement = $('<tr></tr>');
+            //                         $.each(headers, function (index, header) {
+            //                             rowElement.append('<td>' + row[header] + '</td>');
+            //                         });
+            //                         tbody.append(rowElement);
+            //                     });
+            //                 } else {
+            //                     tbody.append('<p>' + response.message + '</p>');
+            //                 }
+            //             }
+            //             else {
+            //                 $('#error').removeClass("d-none").addClass("alert alert-danger").append("<span>" + response.message + "</span>").hide(1000);
+            //             }
+            //         }
+            //     });
+            // });
+
+            $('#ImportExcel').on('click', function () {
+                let fileInput = $('#File')[0].files[0];
+                let selectedSheet = $('#SelectedSheet').val();
+                let tableName = $('#TableName').val();
+
+                var formData = new FormData();
+                formData.append('file', fileInput);
+                formData.append('selectedSheetName', selectedSheet);
+                formData.append('tableName', tableName);
+                $.ajax({
+                    url: '@Url.Action("ImportExcel", "UploadExcel")',
+                    type: 'POST',
+                    data: formData,
+                    dataType: "JSON",
+                    contentType: false,
+                    processData: false,
+                    success: function (response) {
+                        $('#error').removeClass("alert alert-danger alert alert-success").addClass("d-none");
+                        if (response.success) {
+                            $('#error').children('span').empty();
+                            $('#error').removeClass("d-none").addClass("alert alert-success").append("<span>" + response.message + "</span>").toggle("fast");
+                        }
+                        else {
+                            $('#error').children('span').empty();
+                            $('#error').removeClass("d-none").addClass("alert alert-danger").append("<span>" + response.message + "</span>").toggle("fast");
+                        }
+                    }
+                });
+            });
+
+        });
+    </script>
+}

@@ -1,0 +1,35 @@
+﻿@using ImportExcelProject.Common;
+@model DatabaseModel
+@{
+    ViewData["Title"] = "Connect The Database";
+}
+
+<h2 class="text-center">Database Connection</h2>
+@using (Html.BeginForm("Index", "Database", FormMethod.Post))
+{
+    <div class="row">
+        <div class="col-3 px-0">
+            <input class="form-control w-100" type="text" asp-for="ServerName" placeholder="Enter the Server Name" />
+            <span class="text-danger" asp-validation-for="ServerName"></span>
+        </div>
+        <div class="col-3 px-0">
+            <input class="form-control" type="text" asp-for="DatabaseName" placeholder="Enter the Database Name" />
+            <span class="text-danger" asp-validation-for="DatabaseName"></span>
+        </div>
+        <div class="col-3 px-0">
+            <input class="form-control" type="text" asp-for="UserID" placeholder="Enter the User ID" />
+        </div>
+        <div class="col-3">
+            <input class="form-control" type="password" asp-for="Password" placeholder="Enter the Password" />
+        </div>
+        <div class="col-3">
+            <input class="form-control form-check-input" type="checkbox" asp-for="IsLocalhost" />
+            <label>Is Localhost?</label>
+        </div>
+        <div class="col-12 pt-2">
+            <input class="btn btn-success" type="submit" value="Connect" />
+            <a class="btn btn-danger" asp-controller="Database" asp-action="Disconnect">Disconnect</a>
+        </div>
+    </div>
+}
+@Html.Raw(ViewBag.Message)
